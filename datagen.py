@@ -90,7 +90,8 @@ class densityDataGen:
         
         if self.clu_ratios == None:
             while (True):
-                self.clu_ratios = np.sort(np.random.random(self.clunum) * self.data_ratio)
+                self.clu_ratios = np.sort(np.random.random(self.clunum-1) * self.data_ratio)
+                self.clu_ratios = np.append(self.clu_ratios,1)
                 dist = 0
                 newrun = False
                 for i in range(self.clunum):
@@ -620,10 +621,11 @@ class densityDataGen:
         for cluid in self.cores.keys():
             if cluid < -1:
                 con_core_num += len(self.cores[cluid])
-        
+
+
         for cluid in self.cores.keys():
             cluratio = 0
-            
+            #print(self.clu_ratios[cluid])
             cluradius = self.r_sphere*self.dens_factors[cluid]
             
             if cluid >= 1:
