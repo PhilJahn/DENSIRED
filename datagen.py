@@ -99,7 +99,10 @@ class densityDataGen:
                 dist = 0
                 newrun = False
                 for i in range(self.clunum):
-                    if i == 0:
+                    if i==0 and self.clunum == 1:
+                        dist = 1
+                        self.clu_ratios[i] = self.data_ratio
+                    elif i == 0:
                         dist = self.clu_ratios[i]
                     elif i == self.clunum - 1:
                         dist = self.data_ratio - self.clu_ratios[i - 1]
