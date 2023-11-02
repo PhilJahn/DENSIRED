@@ -634,7 +634,7 @@ class densityDataGen:
 
         return True
 
-    def generate_data(self, data_num):
+    def generate_data(self, data_num, center=False, non_zero=False):
         testsum = 0
         mins = []
         maxs = []
@@ -668,11 +668,15 @@ class densityDataGen:
             for coreid in range(len(self.cores[cluid])):
                 core = self.cores[cluid][coreid]
                 core_data_num = assignment_counter[coreid]
-                if (core_data_num == 0 and self.safety):
+                if core_data_num == 0 and non_zero:
                     core_data_num = 1
+                if center and core_data_num > 0:
+                    core_data_num -= 1
+                    data.append(core.copy().tolist() + [cluid])
                 # print(str(coreid) + " " + str(core_data_num))
-                data_new = random_ball_num(core, cluradius, self.dim, core_data_num, cluid)
-                data.extend(data_new.tolist())
+                if core_data_num > 0:
+                    data_new = random_ball_num(core, cluradius, self.dim, core_data_num, cluid)
+                    data.extend(data_new.tolist())
 
         noisenum = round(data_num * self.ratio_noise)
         noise = np.random.random([noisenum, self.dim + 1])
@@ -710,7 +714,7 @@ class densityDataGen:
         data.extend(truenoise)
         # print(len(data))
 
-        if not self.safety:
+        if not non_zero:
             while (len(data) > data_num):
                 data.pop()
                 print(len(data))
