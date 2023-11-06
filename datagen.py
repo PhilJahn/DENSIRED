@@ -34,9 +34,9 @@ def random_ball_num(center, radius, d, n, clunum):
 
 class densityDataGen:
     def __init__(self, dim=2, clunum=2, clu_ratios=None, core_num=10, min_ratio=0, ratio_noise=0, domain_size=1,
-                 radius=1, shift=1, ratio_con=0, connections=0, seed=0, dens_factors=False, stickiness=0,
+                 radius=1, shift=1, ratio_con=0, connections=0, seed=0, dens_factors=False, stickiness=0.5,
                  con_stickiness=0.9, min_dist=1.1, con_min_dist=0.9, shift_spread=0, max_retry=5, verbose=False,
-                 safety=True, con_dens_factors=False, con_radius=2, con_shift=2, branch=0, star=0, square=False,
+                 safety=True, con_dens_factors=False, con_radius=2, con_shift=2, branch=0.05, star=0, square=False,
                  random_start=False):
 
         set_seed(seed)
@@ -678,7 +678,7 @@ class densityDataGen:
                     data_new = random_ball_num(core, cluradius, self.dim, core_data_num, cluid)
                     data.extend(data_new.tolist())
 
-        noisenum = round(data_num * self.ratio_noise)
+        noisenum = max(round(data_num * self.ratio_noise), data_num - len(data))
         noise = np.random.random([noisenum, self.dim + 1])
 
         maxall = -1 * np.inf
