@@ -178,7 +178,7 @@ class densityDataGen:
                 if (self.verbose):
                     print("Cluster stickiness factors:")
                     print(self.stickiness)
-        elif self.stickiness == True:
+        elif self.stickiness is None:
             self.stickiness = []
             for _ in self.clu_ratios:
                 stickiness = np.random.rand()
@@ -218,11 +218,11 @@ class densityDataGen:
                 connection_starts.extend(startclu)
                 connection_stops.extend(stopclu)
 
-        if self.con_dens_factors == None or self.con_dens_factors == False:
+        if self.con_dens_factors == False:
             self.con_dens_factors = []
             for _ in range(len(connection_starts)):
                 self.con_dens_factors.append(1)
-        elif self.con_dens_factors == True:
+        elif self.con_dens_factors == None:
             self.con_dens_factors = []
             for _ in range(len(connection_starts)):
                 factor = (np.random.rand() * 1.5) + 0.5
@@ -234,7 +234,7 @@ class densityDataGen:
         if type(self.con_stickiness) is list:
             if (len(connection_starts) != len(self.con_stickiness)):
                 raise BaseException("Shape of connection stickiness does not match connection number")
-        elif self.con_stickiness == True:
+        elif self.con_stickiness == None:
             self.con_stickiness = []
             for _ in range(len(connection_starts)):
                 con_stickiness = np.random.rand()
@@ -634,11 +634,14 @@ class densityDataGen:
 
         return True
 
-    def generate_data(self, data_num, center=False, non_zero=False):
+    def generate_data(self, data_num, center=False, non_zero=False, seed=None):
         testsum = 0
         mins = []
         maxs = []
         data = []
+
+        if seed is not None:
+            set_seed(seed)
 
         con_core_num = 0
         for cluid in self.cores.keys():
