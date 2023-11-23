@@ -34,9 +34,9 @@ def random_ball_num(center, radius, d, n, clunum):
 
 class densityDataGen:
     def __init__(self, dim=2, clunum=2, clu_ratios=None, core_num=10, min_ratio=0, ratio_noise=0, domain_size=1,
-                 radius=1, shift=1, ratio_con=0, connections=0, seed=0, dens_factors=False, momentum=0.5,
-                 con_momentum=0.9, min_dist=1.1, con_min_dist=0.9, shift_spread=0, max_retry=5, verbose=False,
-                 safety=True, con_dens_factors=False, con_radius=2, con_shift=2, branch=0.05, star=0, square=False,
+                 radius=1, step=1, ratio_con=0, connections=0, seed=0, dens_factors=False, momentum=0.5,
+                 con_momentum=0.9, min_dist=1.1, con_min_dist=0.9, step_spread=0, max_retry=5, verbose=False,
+                 safety=True, con_dens_factors=False, con_radius=2, con_step=2, branch=0.05, star=0, square=False,
                  random_start=False):
 
         set_seed(seed)
@@ -49,15 +49,15 @@ class densityDataGen:
         self.ratio_noise = ratio_noise
         self.domain_size = domain_size
         self.r_sphere = radius
-        self.r_shift = shift
+        self.r_step = step
         self.ratio_con = ratio_con
         self.connections = connections
         self.c_sphere = con_radius
-        self.c_shift = con_shift
+        self.c_step = con_step
 
         self.con_dens_factors = con_dens_factors
         self.dens_factors = dens_factors
-        self.shift_spread = shift_spread
+        self.step_spread = step_spread
         self.max_retry = max_retry
         self.momentum = momentum
         self.con_momentum = con_momentum
@@ -354,7 +354,7 @@ class densityDataGen:
             while (retry_last or retry_some):
 
                 if (retry_some):
-                    shift_dir_old = None
+                    step_dir_old = None
 
                     if (len(self.cores[conid])) <= 1:
                         startcore = self.cores[startid][np.random.choice(len(self.cores[startid]))]
@@ -375,20 +375,20 @@ class densityDataGen:
                     tries_some += 1
                     retry_some = False
 
-                shift_dir = (np.random.random(self.dim) - 0.5)
-                shift_dir = shift_dir / np.linalg.norm(shift_dir)
+                step_dir = (np.random.random(self.dim) - 0.5)
+                step_dir = step_dir / np.linalg.norm(step_dir)
 
                 guided = stopcore - pos_old
 
-                shift_dir = shift_dir * (1 - coni_momentum) + (guided * coni_momentum)
-                shift_dir = shift_dir / np.linalg.norm(shift_dir)
+                step_dir = step_dir * (1 - coni_momentum) + (guided * coni_momentum)
+                step_dir = step_dir / np.linalg.norm(step_dir)
 
-                c_shift_clu = self.c_shift * self.con_dens_factors[conind]
+                c_step_clu = self.c_step * self.con_dens_factors[conind]
                 max_rand = 1.5
                 min_rand = 2 / 3
-                shift_randomness = max(min_rand, min(max_rand, np.random.normal(1, self.shift_spread, 1)))
-                # print(shift_randomness)
-                pos = pos_old + shift_dir * c_shift_clu * shift_randomness
+                step_randomness = max(min_rand, min(max_rand, np.random.normal(1, self.step_spread, 1)))
+                # print(step_randomness)
+                pos = pos_old + step_dir * c_step_clu * step_randomness
 
                 dist = np.linalg.norm(stopcore - pos)
 
@@ -409,7 +409,7 @@ class densityDataGen:
                 else:
                     self.cores[conid].append(pos)
                     pos_old = pos
-                    shift_dir_old = shift_dir
+                    step_dir_old = step_dir
                     retry_last = False
 
                     for d in range(self.dim):
@@ -434,10 +434,10 @@ class densityDataGen:
                     target = c
 
             guided = constart - target
-            shift_dir = guided / np.linalg.norm(guided)
+            step_dir = guided / np.linalg.norm(guided)
 
             pos = target + (self.con_dens_factors[conind] * self.c_sphere + self.dens_factors[
-                startid] * self.r_sphere) * shift_dir * self.con_min_dist
+                startid] * self.r_sphere) * step_dir * self.con_min_dist
 
             connectors = deque(connectors)
             connectors.appendleft(pos)
@@ -455,10 +455,10 @@ class densityDataGen:
                     target = c
 
             guided = constop - target
-            shift_dir = guided / np.linalg.norm(guided)
+            step_dir = guided / np.linalg.norm(guided)
 
             pos = target + (self.con_dens_factors[conind] * self.c_sphere + self.dens_factors[
-                stopid] * self.r_sphere) * shift_dir * self.con_min_dist
+                stopid] * self.r_sphere) * step_dir * self.con_min_dist
 
             connectors.append(pos)
 
@@ -563,7 +563,7 @@ class densityDataGen:
         pos = start_pos
         self.cores[cluid].append(pos)
         pos_old = pos
-        shift_dir_old = None
+        step_dir_old = None
 
         branch_chance = self.branch[cluid]
         star_chance = self.star[cluid]
@@ -577,7 +577,7 @@ class densityDataGen:
             while (retry_last or retry_some):
                 rand = np.random.rand()
                 if (retry_some or rand < branch_chance):
-                    shift_dir_old = None
+                    step_dir_old = None
                     probs = [1 / len(self.cores[cluid])] * len(self.cores[cluid])
                     if star_chance > 0 and len(self.cores[cluid]) > 1:
                         probs = [star_chance]
@@ -589,19 +589,19 @@ class densityDataGen:
                     tries_some += 1
                     retry_some = False
 
-                shift_dir = (np.random.random(self.dim) - 0.5)
-                shift_dir = shift_dir / np.linalg.norm(shift_dir)
-                if shift_dir_old is not None:
-                    shift_dir = shift_dir * (1 - clu_momentum) + (shift_dir_old * clu_momentum)
-                shift_dir = shift_dir / np.linalg.norm(shift_dir)
-                # print(shift_dir)
+                step_dir = (np.random.random(self.dim) - 0.5)
+                step_dir = step_dir / np.linalg.norm(step_dir)
+                if step_dir_old is not None:
+                    step_dir = step_dir * (1 - clu_momentum) + (step_dir_old * clu_momentum)
+                step_dir = step_dir / np.linalg.norm(step_dir)
+                # print(step_dir)
 
-                r_shift_clu = self.r_shift * self.dens_factors[cluid]
+                r_step_clu = self.r_step * self.dens_factors[cluid]
                 max_rand = 1.5
                 min_rand = 2 / 3
-                shift_randomness = max(min_rand, min(max_rand, np.random.normal(1, self.shift_spread, 1)))
-                # print(shift_randomness)
-                pos = pos_old + shift_dir * r_shift_clu * shift_randomness
+                step_randomness = max(min_rand, min(max_rand, np.random.normal(1, self.step_spread, 1)))
+                # print(step_randomness)
+                pos = pos_old + step_dir * r_step_clu * step_randomness
                 attempts = 0
 
                 if (self.tooclose(pos, cluid)):
@@ -615,7 +615,7 @@ class densityDataGen:
                 else:
                     self.cores[cluid].append(pos)
                     pos_old = pos
-                    shift_dir_old = shift_dir
+                    step_dir_old = step_dir
                     retry_last = False
 
                     for d in range(self.dim):
@@ -628,8 +628,8 @@ class densityDataGen:
             #        attempts = 0
             #        print("reset to startpos")
             # print("tooclose")
-            #    shift_dir = np.random.random(d) - 0.5
-            #    pos = pos_old + (shift_dir/(np.sum(shift_dir**2) **(0.5))*np.random.normal(r_shift, shiftwidth, 1))
+            #    step_dir = np.random.random(d) - 0.5
+            #    pos = pos_old + (step_dir/(np.sum(step_dir**2) **(0.5))*np.random.normal(r_step, stepwidth, 1))
             #    attempts = attempts + 1
 
         return True
