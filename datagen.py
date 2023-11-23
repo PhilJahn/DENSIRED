@@ -34,8 +34,8 @@ def random_ball_num(center, radius, d, n, clunum):
 
 class densityDataGen:
     def __init__(self, dim=2, clunum=2, clu_ratios=None, core_num=10, min_ratio=0, ratio_noise=0, domain_size=1,
-                 radius=1, shift=1, ratio_con=0, connections=0, seed=0, dens_factors=False, stickiness=0.5,
-                 con_stickiness=0.9, min_dist=1.1, con_min_dist=0.9, shift_spread=0, max_retry=5, verbose=False,
+                 radius=1, shift=1, ratio_con=0, connections=0, seed=0, dens_factors=False, momentum=0.5,
+                 con_momentum=0.9, min_dist=1.1, con_min_dist=0.9, shift_spread=0, max_retry=5, verbose=False,
                  safety=True, con_dens_factors=False, con_radius=2, con_shift=2, branch=0.05, star=0, square=False,
                  random_start=False):
 
@@ -59,8 +59,8 @@ class densityDataGen:
         self.dens_factors = dens_factors
         self.shift_spread = shift_spread
         self.max_retry = max_retry
-        self.stickiness = stickiness
-        self.con_stickiness = con_stickiness
+        self.momentum = momentum
+        self.con_momentum = con_momentum
         self.min_dist = min_dist
         self.con_min_dist = con_min_dist
         self.safety = safety
@@ -171,24 +171,24 @@ class densityDataGen:
             print("Cluster scale factors:")
             print(self.dens_factors)
 
-        if type(self.stickiness) is list:
-            if (self.clunum != len(self.stickiness)):
-                raise BaseException("Shape of cluster stickiness does not match cluster number")
+        if type(self.momentum) is list:
+            if (self.clunum != len(self.momentum)):
+                raise BaseException("Shape of cluster momentum does not match cluster number")
             else:
                 if (self.verbose):
-                    print("Cluster stickiness factors:")
-                    print(self.stickiness)
-        elif self.stickiness is None:
-            self.stickiness = []
+                    print("Cluster momentum factors:")
+                    print(self.momentum)
+        elif self.momentum is None:
+            self.momentum = []
             for _ in self.clu_ratios:
-                stickiness = np.random.rand()
-                self.stickiness.append(stickiness)
+                momentum = np.random.rand()
+                self.momentum.append(momentum)
             if (self.verbose):
-                print("Cluster stickiness factors:")
-                print(self.stickiness)
+                print("Cluster momentum factors:")
+                print(self.momentum)
         else:
-            stickiness = self.stickiness
-            self.stickiness = [stickiness] * self.clunum
+            momentum = self.momentum
+            self.momentum = [momentum] * self.clunum
 
         if type(self.core_num) is list:
             if (self.clunum != len(self.core_num)):
@@ -231,23 +231,23 @@ class densityDataGen:
         elif (len(connection_starts) != len(self.con_dens_factors)):
             raise BaseException("Shape of connection scale factors does not match connection number")
 
-        if type(self.con_stickiness) is list:
-            if (len(connection_starts) != len(self.con_stickiness)):
-                raise BaseException("Shape of connection stickiness does not match connection number")
-        elif self.con_stickiness == None:
-            self.con_stickiness = []
+        if type(self.con_momentum) is list:
+            if (len(connection_starts) != len(self.con_momentum)):
+                raise BaseException("Shape of connection momentum does not match connection number")
+        elif self.con_momentum == None:
+            self.con_momentum = []
             for _ in range(len(connection_starts)):
-                con_stickiness = np.random.rand()
-                self.con_stickiness.append(con_stickiness)
+                con_momentum = np.random.rand()
+                self.con_momentum.append(con_momentum)
         else:
-            con_stickiness = self.con_stickiness
-            self.con_stickiness = [con_stickiness] * len(connection_starts)
+            con_momentum = self.con_momentum
+            self.con_momentum = [con_momentum] * len(connection_starts)
 
         if verbose:
             for i in range(len(connection_starts)):
                 print("Connection from " + str(connection_starts[i]) + " to " + str(
-                    connection_stops[i]) + " with factor " + str(self.con_dens_factors[i]) + " and stickiness " + str(
-                    self.con_stickiness[i]))
+                    connection_stops[i]) + " with factor " + str(self.con_dens_factors[i]) + " and momentum " + str(
+                    self.con_momentum[i]))
 
         for cluid in range(self.clunum):
             self.generate_cluster(cluid)
@@ -332,9 +332,9 @@ class densityDataGen:
         conind = conid * -1 - 2
         # print("conind: " + str(conind))
 
-        coni_stickiness = self.con_stickiness
-        if type(self.con_stickiness) is list:
-            coni_stickiness = self.con_stickiness[conind]
+        coni_momentum = self.con_momentum
+        if type(self.con_momentum) is list:
+            coni_momentum = self.con_momentum[conind]
 
         dist = np.sum((stopcore - startcore) ** 2) ** (0.5)
 
@@ -380,7 +380,7 @@ class densityDataGen:
 
                 guided = stopcore - pos_old
 
-                shift_dir = shift_dir * (1 - coni_stickiness) + (guided * coni_stickiness)
+                shift_dir = shift_dir * (1 - coni_momentum) + (guided * coni_momentum)
                 shift_dir = shift_dir / np.linalg.norm(shift_dir)
 
                 c_shift_clu = self.c_shift * self.con_dens_factors[conind]
@@ -543,9 +543,9 @@ class densityDataGen:
         if self.tooclose(start_pos, cluid):
             return False
 
-        clu_stickiness = self.stickiness
-        if type(self.stickiness) is list:
-            clu_stickiness = self.stickiness[cluid]
+        clu_momentum = self.momentum
+        if type(self.momentum) is list:
+            clu_momentum = self.momentum[cluid]
 
         core_num = 0
         if type(self.core_num) is list:
@@ -592,7 +592,7 @@ class densityDataGen:
                 shift_dir = (np.random.random(self.dim) - 0.5)
                 shift_dir = shift_dir / np.linalg.norm(shift_dir)
                 if shift_dir_old is not None:
-                    shift_dir = shift_dir * (1 - clu_stickiness) + (shift_dir_old * clu_stickiness)
+                    shift_dir = shift_dir * (1 - clu_momentum) + (shift_dir_old * clu_momentum)
                 shift_dir = shift_dir / np.linalg.norm(shift_dir)
                 # print(shift_dir)
 
