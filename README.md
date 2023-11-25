@@ -2,13 +2,13 @@
 
 ## How to use
 
-Use the following code to generate a skeleton, parameters are listed below
+Use the following code to generate a skeleton. Parameters are listed below.
 
 ```
 skeleton = datagen.densityDataGen()
 ```
 
-Use the following code to obtain a dataset with *n* points from a skeleton
+Use the following code to obtain a dataset with *n* points from a skeleton. There are additional parameters, that are also listed below.
 
 ```
 data = skeleton.generate_data(n)
@@ -16,7 +16,7 @@ datax = data[:,0:-1]
 datay = data[:,-1]
 ```
 
-To visualize the skeleton, call the following. For higher-dimensionalities, either specify *dcount* to get all pairs of the *dc* most spread out dimensions or specify the desired dimensions directly with *dims*.
+To visualize the skeleton, call the following code. For higher-dimensionalities, either specify *dcount* to get all pairs of the *dc* most spread out dimensions or specify the desired dimensions directly with *dims*.
 ```
 skeleton.display_cores(dims=[d1,d2,...], dcount=dc)
 ```
