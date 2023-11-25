@@ -1,0 +1,5 @@
+name,prefix,seed,dim,n_clusters,linkage,ari,nmi,sum
+AgglomerativeClustering,new_data_scaled,0,2,10,ward,0.7672752119939061,0.8156837681640797,1.582958980157986
+AgglomerativeClustering,new_data_scaled,0,2,10,complete,0.524691765501846,0.673180039016906,1.1978718045187522
+AgglomerativeClustering,new_data_scaled,0,2,10,average,0.3070389790811659,0.5769635894096298,0.8840025684907957
+AgglomerativeClustering,new_data_scaled,0,2,10,single,0.001556707079918501,0.020038346891065116,0.021595053970983616
