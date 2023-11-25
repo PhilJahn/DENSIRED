@@ -12,13 +12,14 @@ from collections import deque
 
 from pyparsing import nestedExpr
 
-
+# set seed for data generator
 def set_seed(i):
     np.random.seed(i)
 
 
-# obtain n uniformly sampled points within a d-sphere with a fixed radius around a given point. Assigns all points to given cluster
-# code partially based on code provided here http://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/
+# obtain n uniformly sampled points within a d-sphere with a fixed radius around a given point. Assigns all points to
+# given cluster code partially based on code provided here:
+# http://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/
 def random_ball_num(center, radius, d, n, clunum):
     d = int(d)
     n = int(n)
@@ -32,13 +33,45 @@ def random_ball_num(center, radius, d, n, clunum):
     return x
 
 
+
 class densityDataGen:
+
     def __init__(self, dim=2, clunum=2, clu_ratios=None, core_num=10, min_ratio=0, ratio_noise=0, domain_size=1,
                  radius=1, step=1, ratio_con=0, connections=0, seed=0, dens_factors=False, momentum=0.5,
                  con_momentum=0.9, min_dist=1.1, con_min_dist=0.9, step_spread=0, max_retry=5, verbose=False,
                  safety=True, con_dens_factors=False, con_radius=2, con_step=2, branch=0.05, star=0, square=False,
                  random_start=False):
-
+        """
+        For extensive parameter explanations, please consult the GitHub README
+        :param dim: dimensionality
+        :param clunum: cluster number
+        :param clu_ratios: cluster ratios
+        :param core_num: overall core number
+        :param min_ratio: minimal cluster ratio
+        :param ratio_noise: noise ratio
+        :param domain_size: domain size
+        :param radius: core base radius
+        :param step: base random walk step size
+        :param ratio_con: connection ratio
+        :param connections: connections
+        :param seed: seed
+        :param dens_factors: cluster density factors
+        :param momentum: momentum
+        :param con_momentum: connection momentum
+        :param min_dist: minimal distance ratio between clusters
+        :param con_min_dist: minimal distance ratio between connections
+        :param step_spread: spread of randomization of random walk step size
+        :param max_retry: maximal number of retrys
+        :param verbose: verbose mode
+        :param safety: safety mode
+        :param con_dens_factors: connection density factors
+        :param con_radius: connection radius
+        :param con_step: connection random walk step size
+        :param branch: branching factor
+        :param star: star chance
+        :param square: square noise distribution
+        :param random_start: random start mode
+        """
         set_seed(seed)
         self.verbose = verbose
         self.dim = dim
@@ -283,6 +316,10 @@ class densityDataGen:
                     retry += 1
 
     def generate_cluster(self, cluid):
+        """
+        generate cluster
+        :param cluid: cluster id
+        """
         retry = 0
         no_space = self.random_start
 
@@ -326,6 +363,13 @@ class densityDataGen:
         self.cores[cluid] = np.array(self.cores[cluid])
 
     def make_connection(self, startid, stopid, conid):
+        """
+        make connection between two given clusters with given conid
+        :param startid: id of start cluster
+        :param stopid: id of target cluster
+        :param conid: id of connection (negative)
+        :return: whether connection succeeded
+        """
         startcore = self.cores[startid][np.random.choice(len(self.cores[startid]))]
         stopcore = self.cores[stopid][np.random.choice(len(self.cores[stopid]))]
 
@@ -465,7 +509,16 @@ class densityDataGen:
         self.cores[conid] = np.array(connectors)
         return True
 
+    # check if a position is too close to exitsing cores
     def tooclose(self, pos, label, exclude=None, noise=False):
+        """
+        perform a check regarding closeness
+        :param pos: position
+        :param label: own label
+        :param exclude: labels to exclude
+        :param noise: whether pos is intended for noise or a core
+        :return: whether too close
+        """
         # if (len(points) > 0):
         #    points = points[0]
 
@@ -507,6 +560,13 @@ class densityDataGen:
         return False
 
     def tooclose_pair(self, pos, label, partner):
+        """
+        perform pairwise check regarding closeness
+        :param pos: position
+        :param label: own label
+        :param partner: label of partner
+        :return: whether too close
+        """
         factor1 = 0
         if label >= 0:
             factor1 = self.dens_factors[label] * self.r_sphere
@@ -539,7 +599,12 @@ class densityDataGen:
         return False
 
     def generate_cluster_pos(self, start_pos, cluid):
-
+        """
+        generate a cluster with given id at a specific location
+        :param start_pos: cluster start location
+        :param cluid: cluster id
+        :return: whether cluster generation succeeded
+        """
         if self.tooclose(start_pos, cluid):
             return False
 
@@ -634,7 +699,16 @@ class densityDataGen:
 
         return True
 
+
     def generate_data(self, data_num, center=False, non_zero=False, seed=None):
+        """
+        Generate data points based on underlying skeleton
+        :param data_num: number of data points
+        :param center: whether to place a data point at the core center
+        :param non_zero: whether cores should be guaranteed to have at least one data point
+        :param seed: new seed for data generation
+        :return: np.array of shape (dim+1, data_num), last column is cluster
+        """
         testsum = 0
         mins = []
         maxs = []
@@ -725,6 +799,15 @@ class densityDataGen:
         return np.array(data)
 
     def paint(self, dim1, dim2, data=None, show_radius=True, show_core=True, cores=None):
+        """
+        Data Generator Painter
+        :param dim1: first dimension of plot
+        :param dim2: second dimension of plot
+        :param data: data points to draw
+        :param show_radius: whether to show the core radii
+        :param show_core: whether to show the core positions
+        :param cores: if only specific core are supposed to be drawn
+        """
         if cores is None:
             cores = self.cores
 
@@ -772,13 +855,12 @@ class densityDataGen:
 
         plt.axis('scaled')
 
-        dspan1 = self.maxs[dim1] - self.mins[dim1]
-        dspan2 = self.maxs[dim2] - self.mins[dim2]
-        plt.xlim(self.mins[dim1] - 0.1 * dspan1, self.maxs[dim1] + 0.1 * dspan1)
-        plt.ylim(self.mins[dim2] - 0.1 * dspan2, self.maxs[dim2] + 0.1 * dspan2)
+        #dspan1 = self.maxs[dim1] - self.mins[dim1]
+        #dspan2 = self.maxs[dim2] - self.mins[dim2]
+        #plt.xlim(self.mins[dim1] - 0.1 * dspan1, self.maxs[dim1] + 0.1 * dspan1)
+        #plt.ylim(self.mins[dim2] - 0.1 * dspan2, self.maxs[dim2] + 0.1 * dspan2)
 
         plt.ylabel(dim2 + 1)
-
         plt.xlabel(dim1 + 1)
         if self.verbose:
             plt.legend(handles=legend)
@@ -787,6 +869,14 @@ class densityDataGen:
         plt.show()
 
     def display_data(self, data, show_radius=False, show_core=False, dims=None, dcount=2):
+        """
+        Display data set
+        :param data: data set
+        :param show_radius: whether to show the core radii
+        :param show_core: whether to show the core positions
+        :param dims: specific dimensions to show (if there are more than 2)
+        :param dcount: amount of dimensions to display pairs of (if no specific dimensions are given)
+        """
         if (self.dim == 2):
             self.paint(0, 1, data=data, show_radius=show_radius, show_core=show_core)
         elif dims is not None:
@@ -808,6 +898,11 @@ class densityDataGen:
                         self.paint(d1, d2, data=data, show_radius=show_radius, show_core=show_core)
 
     def display_cores(self, dims=None, dcount=2):
+        """
+        Display data generator skeleton
+        :param dims: specific dimensions to show (if there are more than 2)
+        :param dcount: amount of dimensions to display pairs of (if no specific dimensions are given)
+        """
         # print(self.cores)
         if (self.dim == 2):
             self.paint(0, 1)
@@ -830,6 +925,12 @@ class densityDataGen:
                         self.paint(d1, d2)
 
     def display_cores_selected(self, cores, dims=None, dcount=2):
+        """
+        Display parts of the data generator skeleton
+        :param cores: which cores to display
+        :param dims: specific dimensions to show (if there are more than 2)
+        :param dcount: amount of dimensions to display pairs of (if no specific dimensions are given)
+        """
         if (self.dim == 2):
             self.paint(0, 1, cores=cores)
         elif dims is not None:
@@ -851,10 +952,18 @@ class densityDataGen:
                         self.paint(d1, d2, cores=cores)
 
     def toggle_verbose(self):
+        """
+        swaps verbose setting
+        """
         self.verbose = not self.verbose
 
     def init_stream(self, command="", default_duration=1000):
-
+        """
+        Initialize stream based on strong command
+        :param command: String command for stream
+        :param default_duration: default duration of a stream block
+        :return: stream settings:  stream content, which part repeats, data_cores_block, num_block, noise_block
+        """
         # command_repeats = nestedExpr('[',']').parseString('[' + str(command) + ']').asList()
 
         command = command + " "
@@ -1104,11 +1213,22 @@ class densityDataGen:
         return content[0], repeat, data_cores_block, num_block, noise_block
 
     def display_stream(self, command="", default_duration=1000, show_core=True, show_radius=True):
+        """
+        Display the behaviour of given stream command String (also sets the command to be the current stream)
+        :param command: String command for stream
+        :param default_duration: default duration of a stream block
+        :param show_radius: whether to show the core radii
+        :param show_core: whether to show the core positions
+        """
         self.init_stream(command=command, default_duration=default_duration)
-        self.display_current_stream(command, default_duration, show_core, show_radius)
+        self.display_current_stream(show_core, show_radius)
 
-    def display_current_stream(self, command="", default_duration=1000, show_core=True, show_radius=True):
-
+    def display_current_stream(self, show_core=True, show_radius=True):
+        """
+        Display the behaviour of the currently set stream command
+        :param show_radius: whether to show the core radii
+        :param show_core: whether to show the core positions
+        """
         points = 0
 
         for block in self.stream_content:
@@ -1119,12 +1239,18 @@ class densityDataGen:
             block_cores = {}
             for cluid in self.stream_data_cores_block[block].keys():
                 block_cores[cluid] = self.cores[cluid][self.stream_data_cores_block[block][cluid]]
-            self.display_cores_selected(block_cores)
+            self.display_cores_selected(block_cores,show_core,show_radius)
 
     def __iter__(self):
+        """
+        :return: return stream iterator object (itself)
+        """
         return self
 
     def __next__(self):
+        """
+        :return: next data point based on current stream state
+        """
         recalc_db = False
 
         if self.cur_stream_point == 0 and self.cur_stream_pos == 0:
