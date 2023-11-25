@@ -26,6 +26,27 @@ To visualize a dataset, call the following. Give the dataset as *data*. The flag
 skeleton.display_data(data, show_radius=False, show_core=False, dims=[d1,d2,...], dcount=dc)
 ```
 
+To initialize a stream, call the following function. The *command*-String controls the stream behavior. The *default_duration* is the default duration of a block of the stream. default_duration does not need to be specified, in which case it has a value of 1000. The *command*-String will be explained in more detail further below.
+```
+skeleton.init_stream(command=commandstring, default_duration = 1000)
+```
+
+In order to get an element from the stream, just use the skeleton as an iterator
+```
+x = skeleton.next()
+```
+
+To visualize a data stream, call the following.
+```
+skeleton.display_current_stream()
+```
+
+Alternatively, use this to set a stream command and display it in one command. Parameters are analogous to *init_stream*.
+```
+skeleton.display_stream(command=commandstring, default_duration = 1000)
+```
+
+
 ## Skeleton Parameters
 | **Parameter**        | **Abrev.** | **Default** | **Role**                                                                                                                                                                                                                                                                      |
 |----------------------|------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -35,13 +56,13 @@ skeleton.display_data(data, show_radius=False, show_core=False, dims=[d1,d2,...]
 | domain_size         | *ds*   | $1$         | initial range of the starting position of the clusters                                                                                                                                                                                                                        |
 | radius               | *r*   | $1$         | base range around core center where points can be generated                                                                                                                                                                                                                   |
 | step                | $\delta$     | $1$         | base distance between cores                                                                                                                                                                                                                                                   |
-| dens_factors       |  *cf*   | False       | cluster density/scale factors<be>multiplies both step size and radius for cluster<br> assigns all clusters a density factor 1 if False<br> assign random dens_factors *cf*$_{i}$ between $0.5$ and $2$ if True<br>can also be set per cluster in an array                                                                                                                  |
+| dens_factors       |  *cf*   | False       | cluster density/scale factors<be>multiplies both step size and radius for cluster<br> assigns all clusters a density factor $1$ if False<br> assign random dens_factors *cf*$_{i}$ between $0.5$ and $2$ if True<br>can also be set per cluster in an array                                                                                                                  |
 | momentum           | $\omega$     | $0.5$         | cluster momentum factors<br>assigns the value to all clusters as stickiness factor assigns<br>sets random stickiness factors between $0$ and $1$ if None<br>can also be set per cluster in an array                                                                                                                |
 | min_dist            | *o*   | $1.1$       | overlap factor on the minimal distance between cores (sum of core sizes)                                                                                                                                                                                                              |
 | step_spread | *w*     | $0$           | width of normal distribution on shift                                                                                                                                                                                                                                         |
 | max\_retry           | *mr*  | $5$           | maximal number of attempts for generation before generation enters the failure handling                                                                                                                                                                                       |
 | branch               | $\beta$   | $0.05$           | chance of creating a branch from the prior scaffolding of the cluster<br>done by restarting from a randomly selected core of the current cluster                                                                                                                                 |
-| star                 |  $\varkappa$     | $0$           | star chance, chance of the initial starting core being chosen for any attempt of restarting applies to both failure and branching<br>remaining cores all have an equal probability                                                                                                                                                                    |
+| star                 |  $\varkappa$     | $0$           | chance of the initial starting core being chosen for any attempt of restarting applies to both failure and branching<br>remaining cores all have an equal probability                                                                                                                                                                    |
 | seed                 |   *i*    | $0$         | seed for random operations                                                                                                                                                                                                                                                    |
 | connections          | *cc*       | $0$         | number of connections randomly picks the specified number of connection pairs<br>allows for explicit specification of desired connections if a list is given<br>connections have to specified as "startid;endid"<br>only guarantees number of attempted connections, not final number |
 | con_radius          | *r*$_c$    | $2$         | analogous to radius, used for connections                                                                                                                                                                                                                                     |
@@ -50,13 +71,13 @@ skeleton.display_data(data, show_radius=False, show_core=False, dims=[d1,d2,...]
 | con_momentum     | $\omega_c$  | $0.9$       | analogous to momentum, used for connections                                                                                                                                                                                                                                 |
 | con_min_dist       | *o*$_c$  | $0.9$       | factor on the minimal distance between a connection and other cores                                                                                                                                                                                                           |
 | clu\_ratios          | *ra*    | None        | distribution of data points across clusters                                                                                                                                                                                                                                   |
-| min\_ratio           | *ra*$_m$   | 0           | minimal ratio of cores/points<br>(only used when these are randomly determined through *ra*, should be $<<1$)                                                                                                                                                                   |
+| min\_ratio           | *ra*$_m$   | $0$           | minimal ratio of cores/points<br>(only used when these are randomly determined through *ra*, should be $<<1$)                                                                                                                                                                   |
 | ratio\_noise         | *ra*$_n$     | $0$         | ratio of noise data points                                                                                                                                                                                                                                                    |
 | ratio\_con           | *ra*$_c$    | $0$         | ratio of connection data points                                                                                                                                                                                                                                               |
 | square               | $\square$       | False       | generate noise in square data space                                                                                                                                                                                                                                           |
 | random_start               | *rs*       | False       | whether to start at a random position (True) or to start between two different clusters’ random cores (False)                                                                                                                                                                                                                                           |
 | verbose              | *v*       | False       | Generate text outputs at key events                                                                                                                                                                                                                                           |
-| safety               | *s*       | True        | activates various safety features, such as: noise generation only outside of two times core radius guarantee of at least a single point per core for data generation                                                                                                          |
+| safety               | *s*       | True        | forces noise generation outside of two times core radius      |
 ## Data Generator Parameters
 | **Parameter**        | **Abrev.** | **Default** | **Role**                                                                                                                                                                                                                                                                      |
 |----------------------|------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -96,3 +117,86 @@ The clusters are weighted according to the cluster ratios when disregarding any 
 
 To visualize the stream and to easily make adjustments, it is possible to request the data generator to display the behavior for the stream, which will provide a visualization of the skeleton of the block in each overall stream step.
 It is especially advisable to display the stream behavior before generating the data when individual cores were chosen to ensure the desired cores were selected
+
+
+## Reproducibility ##
+
+The dataset (datasets/new_data_scaled.npy) used for Fig.8 was generated with the following code. An unscaled version from directly after the generate_data call is included as datasets/new_data.npy.
+
+```
+x = datagen.densityDataGen(dim=2, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
+                   clunum= 10, seed = 6, core_num= 200, momentum=[0.5, 0.75, 0.8, 0.3, 0.5, 0.4, 0.2, 0.6, 0.45, 0.7],
+                   branch=[0,0.05, 0.1, 0, 0, 0.1, 0.02, 0, 0, 0.25],
+                   con_min_dist=0.8, verbose=True, safety=True, domain_size = 20, random_start=False)
+data = x.generate_data(5000)
+datax = data[:,0:-1]
+max = np.max(datax) - np.min(datax)
+for d in range(len(datax[0])):
+    datax[:,d] = (datax[:,d] - np.min(datax[:,d]))/max
+datay = data[:,-1]
+```
+The algorithm results used to generate Fig.8 can be found in the folder results/new_data_scaled_results. The .csv files contain the actual performance results for the algorithms. The best_labels.npy files contain the labels of the best-performing clustering for the respective seeds for each algorithm. The best performance was considered to be the highest sum of the NMI and ARI. In the case of ties, the earlier label set was kept.
+
+The datasets of the 'high'-setting (datasets/high_data_{dim}.npy) were generated using the following code. The results for the various algorithms on the 'high' datasets used for Table I and Fig.7 can be found in results/high_data_results. The dim=2 dataset was used for the left part of Fig.6.
+```
+for dim in [2,5,10,50,100]:
+    x = datagen.densityDataGen(dim=dim, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
+                       clunum= 10, seed = 6, core_num= 200, momentum=0.8, step=1.5,
+                       branch=0.1, star=1, verbose=False, safety=False, domain_size = 20, random_start=False)
+    data = x.generate_data(5000)
+    datax = data[:,0:-1]
+    max = np.max(datax) - np.min(datax)
+    for d in range(len(datax[0])):
+        datax[:,d] = (datax[:,d] - np.min(datax[:,d]))/max
+    datay = data[:,-1]
+```
+
+
+The datasets of the 'low'-setting (datasets/low_data_{dim}.npy) were generated using the following code. The results for the various algorithms on the 'low' datasets used for Table II can be found in results/low_data_results. The dim=2 dataset was used for the right part of Fig.6.
+```
+for dim in [2,5,10,50,100]:
+    x = datagen.densityDataGen(dim=dim, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
+                      clunum= 10, seed = 6, core_num= 200, momentum=0, step=1,
+                      branch=0, star=0, verbose=False, safety=False, domain_size = 20, random_start=False)
+    data = x.generate_data(5000)
+    datax = data[:,0:-1]
+    max = np.max(datax) - np.min(datax)
+    for d in range(len(datax[0])):
+        datax[:,d] = (datax[:,d] - np.min(datax[:,d]))/max
+    datay = data[:,-1]
+```
+
+The results of the intrinsic dimensionality benchmarking used for Fig.5 are in intrinsic_dim_100_500_1000_merged.csv. The data for it was generated by the following code for all intseed $\in\[0:9\]$
+```
+dim = 100
+for core_num in [100, 500, 1000, 5000, 10000]:
+  for step in [1, 1.25, 1.5, 1.75, 2]:
+    for branch in [0, 0.0001, 0.001, 0.01, 0.025, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5]:
+      for star in [0, 0.2, 0.4, 0.6, 0.8, 1]:
+        for momentum in [0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.92, 0.95, 0.99, 1]:
+          x = datagen.densityDataGen(dim=dim, ratio_noise=0, max_retry=5, dens_factors=1, square=True,
+                                     clunum=1, seed=intseed, core_num=core_num, momentum=momentum,
+                                     branch=branch, star=star, step=step,
+                                     verbose=False, safety=False, domain_size=20, random_start=False)
+          data = x.generate_data(5000*core_num/100)
+          datax = data[:, 0:-1]
+          datax = _norm_data(datax)
+          pca = PCA().fit(datax)
+          cumsum = np.cumsum(pca.explained_variance_ratio_)
+          int_dim90 = np.argwhere(cumsum >= 0.9)[0][0] + 1
+          int_dim95 = np.argwhere(cumsum >= 0.95)[0][0] + 1
+          int_dim99 = np.argwhere(cumsum >= 0.99)[0][0] + 1
+          int_dim75 = np.argwhere(cumsum >= 0.75)[0][0] + 1
+          int_dim50 = np.argwhere(cumsum >= 0.50)[0][0] + 1
+          int_dim25 = np.argwhere(cumsum >= 0.25)[0][0] + 1
+```
+
+## Seed Spreader ##
+
+The seed_spreader code is based on the description provided in Gan, Junhao, and Yufei Tao. "DBSCAN revisited: Mis-claim, un-fixability, and approximation.", Proceedings of the 2015 ACM SIGMOD international conference on management of data. 2015.
+It can be used like this (step=50*dim was the suggested parameter for the original implementation, but is not hardcoded)
+```
+dim = x
+step = 50*dim
+data = seedSpreader(dim=dim, step=step, noise_adapt=True)
+```
