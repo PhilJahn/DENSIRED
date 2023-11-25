@@ -707,7 +707,7 @@ class densityDataGen:
         :param center: whether to place a data point at the core center
         :param non_zero: whether cores should be guaranteed to have at least one data point
         :param seed: new seed for data generation
-        :return: np.array of shape (dim+1, data_num), last column is cluster
+        :return: data points as  np.array of shape (dim+1, data_num), last column is cluster id
         """
         testsum = 0
         mins = []
