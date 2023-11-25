@@ -84,7 +84,7 @@ skeleton.display_stream(command=commandstring, default_duration = 1000)
 | data_num          | *n*      |             | number of data points                                                                                                                                                      |
 | non_zero          | *d_nz*       |     False        | guarantee at least one point per core                                                                                                                                                         |
 | center         | *d_c*       |     False        | place first data point of core at center of core                                                                                                                                                         |
-| seed         | *d_i*       |     None        | Updates generator seed<br>if None, maintains current data generator seed                                                                                                                                                 |
+| seed         | *d_i*       |     None        | Updates generator seed<br>if None, maintains current data/skeleton generator seed                                                                                                                                                 |
 
 ## DENSIRED for Streams
 The core skeleton provided by DENSIRED allows for a setup for the stream data and offers user control over changes on a cluster and even a sub-cluster level. 
