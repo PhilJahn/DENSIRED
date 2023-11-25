@@ -1,5 +1,31 @@
 # DENSIRED
 
+## How to use
+
+Use the following code to generate a skeleton, parameters are listed below
+
+```
+skeleton = datagen.densityDataGen()
+```
+
+Use the following code to obtain a dataset with *n* points from a skeleton
+
+```
+data = skeleton.generate_data(n)
+datax = data[:,0:-1]
+datay = data[:,-1]
+```
+
+To visualize the skeleton, call the following. For higher-dimensionalities, either specify *dcount* to get all pairs of the *dc* most spread out dimensions or specify the desired dimensions directly with *dims*.
+```
+skeleton.display_cores(dims=[d1,d2,...], dcount=dc)
+```
+
+To visualize a dataset, call the following. Give the dataset as *data*. The flags *show_radius* and *show_core* decide whether to display the core radii and core centers, respectively. For higher-dimensionalities, as with dispaly_cores, either specify *dcount* to get all pairs of the *dc* most spread out dimensions or specify the desired dimensions directly with *dims*.
+```
+skeleton.display_data(data, show_radius=False, show_core=False, dims=[d1,d2,...], dcount=dc)
+```
+
 ## Skeleton Parameters
 | **Parameter**        | **Abrev.** | **Default** | **Role**                                                                                                                                                                                                                                                                      |
 |----------------------|------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
