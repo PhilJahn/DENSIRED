@@ -217,6 +217,5 @@ The density variance is set to $radius \cdot ((i\ \textrm{mod}\ 10) + 1)$, which
 
 The step size ($r_{shift}$) is fixed to $radius\cdot \frac{dim}{2}$, which corresponds to both settings provided by Junhao Gan and Yufei Tao
 ```
-dim = x
 data = seedSpreader(dim=2, noise_adapt=True, var_density = True)
 ```
