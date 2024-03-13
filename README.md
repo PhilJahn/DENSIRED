@@ -121,43 +121,13 @@ It is especially advisable to display the stream behavior before generating the 
 
 ## Reproducibility ##
 
-The dataset (datasets/new_data_scaled.npy) used for Fig.8 was generated with the following code. An unscaled version from directly after the generate_data call is included as datasets/new_data.npy.
 
-```
-x = datagen.densityDataGen(dim=2, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
-                   clunum= 10, seed = 6, core_num= 200, momentum=[0.5, 0.75, 0.8, 0.3, 0.5, 0.4, 0.2, 0.6, 0.45, 0.7],
-                   branch=[0,0.05, 0.1, 0, 0, 0.1, 0.02, 0, 0, 0.25],
-                   con_min_dist=0.8, verbose=True, safety=True, domain_size = 20, random_start=False)
-data = x.generate_data(5000)
-datax = data[:,0:-1]
-max = np.max(datax) - np.min(datax)
-for d in range(len(datax[0])):
-    datax[:,d] = (datax[:,d] - np.min(datax[:,d]))/max
-datay = data[:,-1]
-```
-The algorithm results used to generate Fig.8 can be found in the folder results/new_data_scaled_results. The .csv files contain the actual performance results for the algorithms. The best_labels.npy files contain the labels of the best-performing clustering for the respective seeds for each algorithm. The best performance was considered to be the highest sum of the NMI and ARI. In the case of ties, the earlier label set was kept.
-
-The datasets of the 'high'-setting (datasets/high_data_{dim}.npy) were generated using the following code. The results for the various algorithms on the 'high' datasets used for Table I and Fig.7 can be found in results/high_data_results. The dim=2 dataset was used for the left part of Fig.6.
+The 'high' datasets (datasets/high_data_{dim}.npy), which were used in the paper, were generated using the following code. The results for the various algorithms on the 'high' datasets used for Table 3 and Figure 3 can be found in results/high_data_results.
 ```
 for dim in [2,5,10,50,100]:
     x = datagen.densityDataGen(dim=dim, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
                        clunum= 10, seed = 6, core_num= 200, momentum=0.8, step=1.5,
                        branch=0.1, star=1, verbose=False, safety=False, domain_size = 20, random_start=False)
-    data = x.generate_data(5000)
-    datax = data[:,0:-1]
-    max = np.max(datax) - np.min(datax)
-    for d in range(len(datax[0])):
-        datax[:,d] = (datax[:,d] - np.min(datax[:,d]))/max
-    datay = data[:,-1]
-```
-
-
-The datasets of the 'low'-setting (datasets/low_data_{dim}.npy) were generated using the following code. The results for the various algorithms on the 'low' datasets used for Table II can be found in results/low_data_results. The dim=2 dataset was used for the right part of Fig.6.
-```
-for dim in [2,5,10,50,100]:
-    x = datagen.densityDataGen(dim=dim, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
-                      clunum= 10, seed = 6, core_num= 200, momentum=0, step=1,
-                      branch=0, star=0, verbose=False, safety=False, domain_size = 20, random_start=False)
     data = x.generate_data(5000)
     datax = data[:,0:-1]
     max = np.max(datax) - np.min(datax)
@@ -191,12 +161,62 @@ for core_num in [100, 500, 1000, 5000, 10000]:
           int_dim25 = np.argwhere(cumsum >= 0.25)[0][0] + 1
 ```
 
+The unused 2-d evaluation dataset (datasets/new_data_scaled.npy) was generated with the following code. An unscaled version from directly after the generate_data call is included as datasets/new_data.npy.
+
+```
+x = datagen.densityDataGen(dim=2, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
+                   clunum= 10, seed = 6, core_num= 200, momentum=[0.5, 0.75, 0.8, 0.3, 0.5, 0.4, 0.2, 0.6, 0.45, 0.7],
+                   branch=[0,0.05, 0.1, 0, 0, 0.1, 0.02, 0, 0, 0.25],
+                   con_min_dist=0.8, verbose=True, safety=True, domain_size = 20, random_start=False)
+data = x.generate_data(5000)
+datax = data[:,0:-1]
+max = np.max(datax) - np.min(datax)
+for d in range(len(datax[0])):
+    datax[:,d] = (datax[:,d] - np.min(datax[:,d]))/max
+datay = data[:,-1]
+```
+The algorithm results for this setting can be found in the folder results/new_data_scaled_results. The .csv files contain the actual performance results for the algorithms. The best_labels.npy files contain the labels of the best-performing clustering for the respective seeds for each algorithm. The best performance was considered to be the highest sum of the NMI and ARI. In the case of ties, the earlier label set was kept.
+
+
+The unused datasets of the 'low'-setting (datasets/low_data_{dim}.npy) were generated using the following code. The results for the various algorithms on the 'low' datasets can be found in results/low_data_results.
+```
+for dim in [2,5,10,50,100]:
+    x = datagen.densityDataGen(dim=dim, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
+                      clunum= 10, seed = 6, core_num= 200, momentum=0, step=1,
+                      branch=0, star=0, verbose=False, safety=False, domain_size = 20, random_start=False)
+    data = x.generate_data(5000)
+    datax = data[:,0:-1]
+    max = np.max(datax) - np.min(datax)
+    for d in range(len(datax[0])):
+        datax[:,d] = (datax[:,d] - np.min(datax[:,d]))/max
+    datay = data[:,-1]
+```
+
 ## Seed Spreader ##
 
-The seed_spreader code is based on the description provided in Gan, Junhao, and Yufei Tao. "DBSCAN revisited: Mis-claim, un-fixability, and approximation.", Proceedings of the 2015 ACM SIGMOD international conference on management of data. 2015.
-It can be used like this (step=50*dim was the suggested parameter for the original implementation, but is not hardcoded)
+The seed_spreader code is based on the description provided in Junhao Gan and Yufei Tao. "DBSCAN revisited: Mis-claim, un-fixability, and approximation.", Proceedings of the 2015 ACM SIGMOD international conference on management of data. 2015, as well as Junhao Gan and Yufei Tao. "On the Hardness and Approximation of Euclidean DBSCAN", ACM Transactions on Database Systems (TODS), vol. 42, no. 3, pp. 1–45, 2017.
+The var_density flag swaps the generator to the Varying-density setting described in the 2017 paper.
+
+It can be used like this:
+
+| **Parameter**        | **Abrev.** | **Default** | **Role**                                                                                                                                                                                                                                                                      |
+|----------------------|-------------|-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| n      | n | 2000000 | number of data points   |
+| dim      | d | 5 | dimensionality |
+| ratio_noise    | $\rho$, $\rho_{noise}$ | 0.001 | noise ratio  |
+| domain_size | | $10^5$ | domain size |
+| reset_counter | $c_{reset}$ | 100 | local counter for hypersphere points |
+| restart_chance_mult | $rcm$ | 0.001 | cluster restart overall<br>roughly the desired cluster number, though not the actual cluster number<br>corresponds to $\rho_{noise} =  rcm  / (n \cdot (1 - \rho_{noise}))$  |
+| radius | $r_{vincinity}$ | 100 |  radius of hypersphere |
+| noise_adapt | | False | adapt noise to altered domain size after random walk (not part of the description provided by Junhao Gan and Yufei Tao) |
+| var_density| | False | enables density-based mode introduced in "On the Hardness and Approximation of Euclidean DBSCAN"|
+| seed | | 0 | seed of randomness |
+| verbose | | False | Generate text outputs at key events             |
+
+The density variance is set to $radius \cdot ((i\ \textrm{mod}\ 10) + 1)$, which corresponds to the setting in the 2017 paper.
+
+The step size ($r_{shift}$) is fixed to $radius\cdot \frac{dim}{2}$, which corresponds to both settings provided by Junhao Gan and Yufei Tao
 ```
 dim = x
-step = 50*dim
-data = seedSpreader(dim=dim, step=step, noise_adapt=True)
+data = seedSpreader(dim=2, noise_adapt=True, var_density = True)
 ```
