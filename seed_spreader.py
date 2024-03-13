@@ -16,8 +16,11 @@ def set_seed(i):
     np.random.seed(i)
 
 # Seed Spreader as described in DBSCAN Revisited
-# Gan, Junhao, and Yufei Tao. "DBSCAN revisited: Mis-claim, un-fixability, and approximation."
+# Junhao Gan and Yufei Tao. "DBSCAN revisited: Mis-claim, un-fixability, and approximation."
 # Proceedings of the 2015 ACM SIGMOD international conference on management of data. 2015.
+# Junhao Gan and Yufei Tao. “On the hardness and approximation of euclidean dbscan,”
+# ACM Transactions on Database Systems (TODS), vol. 42, no. 3, pp. 1–45, 2017
+
 
 # obtain n uniformly sampled points within a d-sphere with a fixed radius around a given point. Assigns all points to given cluster
 # code partially based on code provided here http://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/
@@ -34,7 +37,7 @@ def random_ball_num(center, radius, d, n, clunum):
     return x
 
 def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, reset_counter= 100, restart_chance_mult = 10,
-             radius=100, step=250, seed=0, verbose =False, noise_adapt=False):
+             radius=100, seed=0, verbose =False, noise_adapt=False, var_density = False):
     """
     Seed Spreader generator function
     :param n: number of data points
@@ -44,18 +47,21 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
     :param reset_counter: counter for hypersphere points
     :param restart_chance_mult: cluster restart overall
     :param radius: radius of hypersphere
-    :param step: step of random walk (in DBSCAN revisited: 50*dim)
+    :param var_density: density based mode introduced in “On the hardness and approximation of euclidean dbscan,”, uses ((i mod 10) + 1) as factor
     :param seed: seed
     :param verbose: verbose
     :param noise_adapt: adapt noise to altered domain size after random walk
     :return: data points as np.array of shape (dim+1, data_num), last column is cluster id
     """
+
+    step = radius/2*dim
+
     if verbose:
         print("dim: ", dim)
         print("n: ", n)
         print("reset_counter", reset_counter)
-        print("radius: ", radius)
-        print("step:", step)
+        print("base radius: ", radius)
+        print("base step:", step)
     set_seed(seed)
     ratio_noise = ratio_noise
     reset_counter = reset_counter
@@ -70,6 +76,12 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
     counter = reset_counter
     cluid = 0
     while (len(points) < num_data):
+
+        if var_density:
+            factor = (cluid % 10) + 1
+        else:
+            factor = 1
+
         rand = np.random.rand()
         if rand < restart_chance:
             if(verbose):
@@ -78,7 +90,7 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
             counter = reset_counter
             if len(points) > 0:
                 cluid += 1
-        point = random_ball_num(pos, radius, dim, 1, cluid)
+        point = random_ball_num(pos, radius* factor, dim, 1, cluid)
         points.append(point[0])
         counter -= 1
 
@@ -86,7 +98,7 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
             step_dir = (np.random.random(dim) - 0.5)
             step_dir = step_dir / np.linalg.norm(step_dir)
             #print(pos)
-            pos = pos + step_dir * step
+            pos = pos + (step_dir * step * factor)
             counter = reset_counter
             #print(pos)
             if verbose:
@@ -127,8 +139,8 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
 
 if __name__ == '__main__':
     dim = 2
-    step = 50*dim
-    data = seedSpreader(dim=2, step=step, verbose=True, noise_adapt=True)
+    noise_ratio = 0.001
+    data = seedSpreader(dim=2, ratio_noise=noise_ratio, noise_adapt=True, var_density = True)
 
     print(data)
     datax = data[:, 0:-1]
