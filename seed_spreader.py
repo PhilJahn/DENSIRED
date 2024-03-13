@@ -18,7 +18,7 @@ def set_seed(i):
 # Seed Spreader as described in DBSCAN Revisited
 # Junhao Gan and Yufei Tao. "DBSCAN revisited: Mis-claim, un-fixability, and approximation."
 # Proceedings of the 2015 ACM SIGMOD international conference on management of data. 2015.
-# Junhao Gan and Yufei Tao. “On the hardness and approximation of euclidean dbscan,”
+# Junhao Gan and Yufei Tao. "On the Hardness and Approximation of Euclidean DBSCAN",
 # ACM Transactions on Database Systems (TODS), vol. 42, no. 3, pp. 1–45, 2017
 
 
@@ -140,7 +140,7 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
 if __name__ == '__main__':
     dim = 2
     noise_ratio = 0.001
-    data = seedSpreader(dim=2, ratio_noise=noise_ratio, noise_adapt=True, var_density = True)
+    data = seedSpreader(dim=dim, ratio_noise=noise_ratio, noise_adapt=True, var_density = True)
 
     print(data)
     datax = data[:, 0:-1]
