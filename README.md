@@ -161,7 +161,7 @@ for core_num in [100, 500, 1000, 5000, 10000]:
           int_dim25 = np.argwhere(cumsum >= 0.25)[0][0] + 1
 ```
 
-The unused 2-d evaluation dataset (datasets/new_data_scaled.npy) was generated with the following code. An unscaled version from directly after the generate_data call is included as datasets/new_data.npy.
+The "mix"-setting 2-d evaluation dataset (datasets/new_data_scaled.npy) used in the supplementary material was generated with the following code. An unscaled version from directly after the generate_data call is included as datasets/new_data.npy.
 
 ```
 x = datagen.densityDataGen(dim=2, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
@@ -178,7 +178,7 @@ datay = data[:,-1]
 The algorithm results for this setting can be found in the folder results/new_data_scaled_results. The .csv files contain the actual performance results for the algorithms. The best_labels.npy files contain the labels of the best-performing clustering for the respective seeds for each algorithm. The best performance was considered to be the highest sum of the NMI and ARI. In the case of ties, the earlier label set was kept.
 
 
-The unused datasets of the 'low'-setting (datasets/low_data_{dim}.npy) were generated using the following code. The results for the various algorithms on the 'low' datasets can be found in results/low_data_results.
+The datasets of the 'low'-setting (datasets/low_data_{dim}.npy) used in the supplementary material were generated using the following code. The results for the various algorithms on the 'low' datasets can be found in results/low_data_results.
 ```
 for dim in [2,5,10,50,100]:
     x = datagen.densityDataGen(dim=dim, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
