@@ -122,7 +122,7 @@ It is especially advisable to display the stream behavior before generating the 
 ## Reproducibility ##
 
 
-The 'high' datasets (datasets/high_data_{dim}.npy), which were used in the paper, were generated using the following code. The results for the various algorithms on the 'high' datasets used for Table 3 and Figure 3 can be found in results/high_data_results.
+The 'stretched' datasets (datasets/high_data_{dim}.npy), which were used in the paper, were generated using the following code. The results for the various algorithms on the 'stretched' datasets used for Table 3 and Figure 3 can be found in results/high_data_results.
 ```
 for dim in [2,5,10,50,100]:
     x = datagen.densityDataGen(dim=dim, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
@@ -178,7 +178,7 @@ datay = data[:,-1]
 The algorithm results for this setting can be found in the folder results/new_data_scaled_results. The .csv files contain the actual performance results for the algorithms. The best_labels.npy files contain the labels of the best-performing clustering for the respective seeds for each algorithm. The best performance was considered to be the highest sum of the NMI and ARI. In the case of ties, the earlier label set was kept.
 
 
-The datasets of the 'low'-setting (datasets/low_data_{dim}.npy) used in the supplementary material were generated using the following code. The results for the various algorithms on the 'low' datasets can be found in results/low_data_results.
+The datasets of the 'compact'-setting (datasets/low_data_{dim}.npy) used in the supplementary material were generated using the following code. The results for the various algorithms on the 'compact' datasets can be found in results/low_data_results.
 ```
 for dim in [2,5,10,50,100]:
     x = datagen.densityDataGen(dim=dim, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
