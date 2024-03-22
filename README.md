@@ -84,6 +84,7 @@ skeleton.display_stream(command=commandstring, default_duration = 1000)
 | data_num          | *n*      |             | number of data points                                                                                                                                                      |
 | non_zero          | *d_nz*       |     False        | guarantee at least one point per core                                                                                                                                                         |
 | center         | *d_c*       |     False        | place first data point of core at center of core                                                                                                                                                         |
+| equal         | *d_e*       |     False        | attempt to distribute points as equally as possible across cluster cores of teh same cluster                                                                                                                                                         |
 | seed         | *d_i*       |     None        | Updates generator seed<br>if None, maintains current data/skeleton generator seed                                                                                                                                                 |
 
 ## DENSIRED for Streams
