@@ -700,13 +700,14 @@ class densityDataGen:
         return True
 
 
-    def generate_data(self, data_num, center=False, non_zero=False, seed=None):
+    def generate_data(self, data_num, center=False, non_zero=False, seed=None, equal=False):
         """
         Generate data points based on underlying skeleton
         :param data_num: number of data points
         :param center: whether to place a data point at the core center
         :param non_zero: whether cores should be guaranteed to have at least one data point
         :param seed: new seed for data generation
+        :param: equal: spread out data points as equal as possible across cluster
         :return: data points as  np.array of shape (dim+1, data_num), last column is cluster id
         """
         testsum = 0
@@ -740,11 +741,17 @@ class densityDataGen:
             # print(cluid)
             clu_data_num = round(clu_ratio * data_num)
             testsum += clu_data_num
-            assignment = np.random.choice(clu_core_num, clu_data_num)
-            assignment_counter = Counter(assignment)
+            if equal:
+                spread_val = clu_core_num//clu_data_num
+                assignment = np.random.choice(clu_core_num, clu_data_num%clu_core_num)
+                assignment_counter = Counter(assignment)
+            else:
+                spread_val = 0
+                assignment = np.random.choice(clu_core_num, clu_data_num)
+                assignment_counter = Counter(assignment)
             for coreid in range(len(self.cores[cluid])):
                 core = self.cores[cluid][coreid]
-                core_data_num = assignment_counter[coreid]
+                core_data_num = assignment_counter[coreid] + spread_val
                 if core_data_num == 0 and non_zero:
                     core_data_num = 1
                 if center and core_data_num > 0:
