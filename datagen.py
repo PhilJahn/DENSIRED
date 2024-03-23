@@ -743,7 +743,7 @@ class densityDataGen:
             testsum += clu_data_num
             if equal:
                 spread_val = clu_data_num//clu_core_num
-                assignment = np.random.choice(clu_core_num, clu_data_num%clu_core_num)
+                assignment = np.random.choice(clu_core_num, clu_data_num%clu_core_num, replace=False)
                 assignment_counter = Counter(assignment)
             else:
                 spread_val = 0
