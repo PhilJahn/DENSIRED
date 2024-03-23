@@ -162,7 +162,7 @@ for core_num in [100, 500, 1000, 5000, 10000]:
           int_dim25 = np.argwhere(cumsum >= 0.25)[0][0] + 1
 ```
 
-The "mix"-setting 2-d evaluation dataset (datasets/new_data_scaled.npy) used for Figures 2,3 and 6 of the supplementary material was generated with the following code. An unscaled version from directly after the generate_data call is included as datasets/new_data.npy.
+The "mix"-setting 2-d evaluation dataset (datasets/new_data_scaled_2.npy) used for Figures 2,3 and 6 of the supplementary material was generated with the following code. An unscaled version from directly after the generate_data call is included as datasets/new_data_2.npy.
 
 ```
 x = datagen.densityDataGen(dim=2, ratio_noise = 0.1, max_retry=5, dens_factors=[1,1,0.5, 0.3, 2, 1.2, 0.9, 0.6, 1.4, 1.1], square=True, 
