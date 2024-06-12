@@ -37,7 +37,7 @@ def random_ball_num(center, radius, d, n, clunum):
     return x
 
 def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, reset_counter= 100, restart_chance_mult = 10,
-             radius=100, seed=0, verbose =False, noise_adapt=False, var_density = False):
+             radius=100, seed=0, verbose =False, noise_adapt=False, var_density = False, step = False):
     """
     Seed Spreader generator function
     :param n: number of data points
@@ -51,10 +51,11 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
     :param seed: seed
     :param verbose: verbose
     :param noise_adapt: adapt noise to altered domain size after random walk
+    :param step: overwrite step, otherwise radius/(2*dim)
     :return: data points as np.array of shape (dim+1, data_num), last column is cluster id
     """
-
-    step = radius/2*dim
+    if not step:
+        step = radius/2*dim
 
     if verbose:
         print("dim: ", dim)

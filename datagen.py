@@ -36,7 +36,7 @@ def random_ball_num(center, radius, d, n, clunum):
 
 class densityDataGen:
 
-    def __init__(self, dim=2, clunum=2, clu_ratios=None, core_num=10, min_ratio=0, ratio_noise=0, domain_size=1,
+    def __init__(self, dim=2, clunum=2, clu_ratios=None, core_num=10, min_ratio=0, ratio_noise=0, domain_size=100,
                  radius=1, step=1, ratio_con=0, connections=0, seed=0, dens_factors=False, momentum=0.5,
                  con_momentum=0.9, min_dist=1.1, con_min_dist=0.9, step_spread=0, max_retry=5, verbose=False,
                  safety=True, con_dens_factors=False, con_radius=2, con_step=2, branch=0.05, star=0, square=False,
@@ -762,7 +762,20 @@ class densityDataGen:
                     data_new = random_ball_num(core, cluradius, self.dim, core_data_num, cluid)
                     data.extend(data_new.tolist())
 
+        if data_num - len(data) > 0 and self.ratio_noise == 0:
+            clus = np.random.choice(len(self.cores.keys()), data_num - len(data), replace = True)
+            for cluid in clus:
+                clu_core_num = len(self.cores[cluid])
+                coreid = np.random.choice(clu_core_num,1)
+                core = self.cores[cluid][coreid]
+                cluradius = self.r_sphere * self.dens_factors[cluid]
+                data_new = random_ball_num(core, cluradius, self.dim, 1, cluid)
+                data.extend(data_new.tolist())
+
         noisenum = max(round(data_num * self.ratio_noise), data_num - len(data))
+        #print("diff:", data_num - len(data), "noisenum:", noisenum, flush=True)
+        if self.ratio_noise == 0:
+            noisenum = 0
         noise = np.random.random([noisenum, self.dim + 1])
 
         maxall = -1 * np.inf
