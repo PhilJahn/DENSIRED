@@ -36,7 +36,7 @@ def random_ball_num(center, radius, d, n, clunum):
 
 class densityDataGen:
 
-    def __init__(self, dim=2, clunum=2, clu_ratios=None, core_num=10, min_ratio=0, ratio_noise=0, domain_size=1,
+    def __init__(self, dim=2, clunum=2, clu_ratios=None, core_num=10, min_ratio=0, ratio_noise=0, domain_size=20,
                  radius=1, step=1, ratio_con=0, connections=0, seed=0, dens_factors=False, momentum=0.5,
                  con_momentum=0.9, min_dist=1.1, con_min_dist=0.9, step_spread=0, max_retry=5, verbose=False,
                  safety=True, con_dens_factors=False, con_radius=2, con_step=2, branch=0.05, star=0, square=False,
