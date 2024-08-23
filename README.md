@@ -1,5 +1,13 @@
 # DENSIRED
 
+## Installation
+
+The current stable version can be installed by the following command:
+
+```
+pip install densired
+```
+
 ## How to use
 
 Use the following code to generate a skeleton. Parameters are listed below.
