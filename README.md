@@ -235,3 +235,12 @@ The density variance is set to $radius \cdot ((i\ \textrm{mod}\ 10) + 1)$, which
 ```
 data = seedSpreader(dim=2, noise_adapt=True, var_density = True)
 ```
+
+## Requirements ##
+
+A requirements file for datagen.py and seed_spreader.py has been generated through pip freeze and is provided here. The used Python version was Python 3.9. Other python versions may need different versions of the packages.
+The required packages are:
+```
+numpy
+matplotlib
+```

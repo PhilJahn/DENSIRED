@@ -1,16 +1,8 @@
 import numpy as np
-import pandas as pd
-from random import random
-import math
-import sys
-import os
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import seaborn as sns
 from collections import Counter
 from collections import deque
-
-from pyparsing import nestedExpr
 
 # set seed for data generator
 def set_seed(i):
