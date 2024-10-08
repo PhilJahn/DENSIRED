@@ -4,6 +4,8 @@ import matplotlib.patches as mpatches
 from collections import Counter
 from collections import deque
 
+from scipy.stats import multivariate_t, multivariate_normal
+
 # set seed for data generator
 def set_seed(i):
     np.random.seed(i)
@@ -13,6 +15,7 @@ def set_seed(i):
 # given cluster code partially based on code provided here:
 # http://extremelearning.com.au/how-to-generate-uniformly-random-points-on-n-spheres-and-n-balls/
 def random_ball_num(center, radius, d, n, clunum):
+    #print("uniform")
     d = int(d)
     n = int(n)
     u = np.random.normal(0, 1, (n, d + 1))  # an array of d normally distributed random variables
@@ -24,7 +27,26 @@ def random_ball_num(center, radius, d, n, clunum):
     x[:, -1] = clunum
     return x
 
+def gaussian_ball_num(center, radius, d, n, clunum, seed):
+    #print("gaussian")
+    d = int(d)
+    n = int(n)
+    center = np.append(center,0)
+    cov = np.diag([1]*(d+1))
+    r = multivariate_normal.rvs(size=n, mean=center, cov=cov, random_state=seed)
+    x = r.reshape(n,d+1)
+    x[:, -1] = clunum
+    return x
 
+def t_ball_num(center, radius, d, n, clunum, df, seed):
+    #print("student_t")
+    d = int(d)
+    n = int(n)
+    center = np.append(center,0)
+    r = multivariate_t.rvs(df=df, size=n, loc=center, shape=radius, random_state=seed)
+    x = r.reshape(n,d+1)
+    x[:, -1] = clunum
+    return x
 
 class densityDataGen:
 
@@ -32,7 +54,7 @@ class densityDataGen:
                  radius=1, step=1, ratio_con=0, connections=0, seed=0, dens_factors=False, momentum=0.5,
                  con_momentum=0.9, min_dist=1.1, con_min_dist=0.9, step_spread=0, max_retry=5, verbose=False,
                  safety=True, con_dens_factors=False, con_radius=2, con_step=2, branch=0.05, star=0, square=False,
-                 random_start=False):
+                 random_start=False, distribution=None, pos=None):
         """
         For extensive parameter explanations, please consult the GitHub README
         :param dim: dimensionality
@@ -63,6 +85,8 @@ class densityDataGen:
         :param star: star chance
         :param square: square noise distribution
         :param random_start: random start mode
+        :param distribution: distribution used for points per core, None default to uniform distribution
+        :param pos: specified starting core position for clusters, if
         """
         set_seed(seed)
         self.verbose = verbose
@@ -116,6 +140,36 @@ class densityDataGen:
         self.data_ratio = 1 - ratio_con - ratio_noise
         if (self.data_ratio <= 0):
             raise BaseException("No data points can be generated")
+
+        if pos is None:
+            self.pos = [None]*self.clunum
+        elif len(pos) == self.clunum:
+            for x in pos:
+                if x is not None and len(x) != self.dim:
+                    raise BaseException("Specified position does not match dimensionality")
+            self.pos = pos
+        else:
+            raise BaseException("Shape of cluster positions does not match cluster number")
+
+        self.distributions = []
+        if not isinstance(distribution, list):
+            distribution = [distribution]*self.clunum
+
+        if len(distribution) != self.clunum:
+            raise BaseException("Shape of cluster distributions does not match cluster number")
+
+        for x in distribution:
+            if x == None or str(x).lower() == "uniform":
+                self.distributions.append("uniform")
+            elif str(x).lower() == "studentt" or str(x).lower() == "tdist":
+                self.distributions.append(2)
+            elif str(x).lower() == "gaussian":
+                self.distributions.append("gaussian")
+            else:
+                try:
+                    self.distributions.append(float(x))
+                except:
+                    raise BaseException(f"{x} is not implemented")
 
         if self.clu_ratios == None:
             while (True):
@@ -317,8 +371,11 @@ class densityDataGen:
 
         #print(self.cores)
         while (True):
-
-            if cluid == 0 or cluid == 1 or no_space:
+            if self.pos[cluid] is not None and retry == 0:
+                pos = self.pos[cluid]
+                if self.verbose:
+                    print(f"{cluid}: fixed start {pos}")
+            elif cluid == 0 or cluid == 1 or no_space:
                 pos = np.random.random(self.dim) * self.domain_size
                 if self.verbose:
                     print(f"{cluid}: random start")
@@ -719,7 +776,7 @@ class densityDataGen:
             cluratio = 0
             # print(self.clu_ratios[cluid])
             cluradius = self.r_sphere * self.dens_factors[cluid]
-
+            dist = self.distributions[cluid]
             if cluid >= 1:
                 clu_ratio = self.clu_ratios[cluid] - self.clu_ratios[cluid - 1]
             elif cluid == 0:
@@ -727,7 +784,7 @@ class densityDataGen:
             else:
                 clu_ratio = self.ratio_con * len(self.cores[cluid]) / con_core_num
                 cluradius = self.c_sphere * self.con_dens_factors[-1 * cluid - 2]
-
+                dist = "uniform"
             clu_core_num = len(self.cores[cluid])
 
             # print(cluid)
@@ -751,7 +808,7 @@ class densityDataGen:
                     data.append(core.copy().tolist() + [cluid])
                 # print(str(coreid) + " " + str(core_data_num))
                 if core_data_num > 0:
-                    data_new = random_ball_num(core, cluradius, self.dim, core_data_num, cluid)
+                    data_new = self.generate_distribution(core, cluradius, core_data_num, dist, cluid)
                     data.extend(data_new.tolist())
 
         if data_num - len(data) > 0 and self.ratio_noise == 0:
@@ -761,7 +818,7 @@ class densityDataGen:
                 coreid = np.random.choice(clu_core_num,1)
                 core = self.cores[cluid][coreid]
                 cluradius = self.r_sphere * self.dens_factors[cluid]
-                data_new = random_ball_num(core, cluradius, self.dim, 1, cluid)
+                data_new = self.generate_distribution(core, cluradius, 1, dist, cluid)
                 data.extend(data_new.tolist())
 
         noisenum = max(round(data_num * self.ratio_noise), data_num - len(data))
@@ -809,6 +866,17 @@ class densityDataGen:
                 print(len(data))
 
         return np.array(data)
+
+    def generate_distribution(self, core, cluradius, core_data_num, dist, cluid):
+        if dist == "uniform":
+            return random_ball_num(core, cluradius, self.dim, core_data_num, cluid)
+        elif dist == "gaussian":
+            gseed = np.random.randint(1000000)
+            return gaussian_ball_num(core, cluradius, self.dim, core_data_num, cluid, gseed)
+
+        else:
+            tseed = np.random.randint(1000000)
+            return t_ball_num(core, cluradius, self.dim, core_data_num, cluid, float(self.distributions[cluid]), tseed)
 
     def paint(self, dim1, dim2, data=None, show_radius=True, show_core=True, cores=None):
         """
@@ -867,17 +935,10 @@ class densityDataGen:
 
         plt.axis('scaled')
 
-        #dspan1 = self.maxs[dim1] - self.mins[dim1]
-        #dspan2 = self.maxs[dim2] - self.mins[dim2]
-        #plt.xlim(self.mins[dim1] - 0.1 * dspan1, self.maxs[dim1] + 0.1 * dspan1)
-        #plt.ylim(self.mins[dim2] - 0.1 * dspan2, self.maxs[dim2] + 0.1 * dspan2)
-
         plt.ylabel(dim2 + 1)
         plt.xlabel(dim1 + 1)
         if self.verbose:
             plt.legend(handles=legend)
-            # plt.ylim(50,100)
-            # plt.xlim(0,50)
         plt.show()
 
     def display_data(self, data, show_radius=False, show_core=False, dims=None, dcount=2):
@@ -1137,7 +1198,6 @@ class densityDataGen:
         content = {}
         remaining_loops = len(nested_loop)
 
-        print(num)
         for i in num.keys():
             if len(num.keys()) < 2:
                 break
@@ -1150,17 +1210,8 @@ class densityDataGen:
                         num[0] = 'x'
                         num[i] = 2
 
-        # print(loopstart)
-        # print(loopstop)
-        # print(num)
-        print(data_cores_block)
-        # print(num_block)
-        # print(noise_block)
-        # print(nested_loop)
-
         while remaining_loops > 0:
 
-            # print(remaining_loops)
             for lk in nested_loop.keys():
                 if len(nested_loop[lk]) > 0 and not lk in content.keys():
                     wait = False
@@ -1281,9 +1332,7 @@ class densityDataGen:
                     self.in_repeat = True
                     self.cur_stream_pos = 0
                     block = self.stream_repeat[self.cur_stream_pos]
-                    print("repeat")
                 else:
-                    print("generates from block: " + str(self.cur_stream_pos))
                     block = self.stream_content[self.cur_stream_pos]
                 self.cur_block_num = self.stream_num_block[block]
                 recalc_db = True
@@ -1342,9 +1391,11 @@ class densityDataGen:
         else:
             core_choice = np.random.choice(self.stream_data_cores_block[block][cluid_choice])
             core_chosen_pos = self.cores[cluid_choice][core_choice]
+            dist = self.distributions[cluid_choice]
             cluradius = 0
             if cluid_choice >= 0:
                 cluradius = self.r_sphere * self.dens_factors[cluid_choice]
             else:
                 cluradius = self.c_sphere * self.con_dens_factors[-1 * cluid_choice - 2]
-            return random_ball_num(core_chosen_pos, cluradius, self.dim, 1, cluid_choice)[0]
+                dist = "uniform"
+            return self.generate_distribution(core_chosen_pos, cluradius, 1, dist, cluid_choice)[0]
