@@ -810,14 +810,20 @@ class densityDataGen:
                 if core_data_num > 0:
                     data_new = self.generate_distribution(core, cluradius, core_data_num, dist, cluid)
                     data.extend(data_new.tolist())
-
         if data_num - len(data) > 0 and self.ratio_noise == 0:
-            clus = np.random.choice(self.clunum, data_num - len(data), replace=True)
-            for cluid in clus:
+            corekeys = list(self.cores.keys())
+            clus = np.random.choice(len(corekeys), data_num - len(data), replace=True)
+            for clukey_id in clus:
+                cluid = corekeys[clukey_id]
                 clu_core_num = len(self.cores[cluid])
+                if cluid < 0:
+                    cluradius = self.c_sphere * self.con_dens_factors[-1 * cluid - 2]
+                    dist = "uniform"
+                else:
+                    dist = self.distributions[cluid]
+                    cluradius = self.r_sphere * self.dens_factors[cluid]
                 coreid = np.random.choice(clu_core_num,1)
                 core = self.cores[cluid][coreid]
-                cluradius = self.r_sphere * self.dens_factors[cluid]
                 data_new = self.generate_distribution(core, cluradius, 1, dist, cluid)
                 data.extend(data_new.tolist())
 
