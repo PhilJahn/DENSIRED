@@ -773,13 +773,13 @@ class densityDataGen:
                 con_core_num += len(self.cores[cluid])
 
         for cluid in self.cores.keys():
-            cluratio = 0
-            # print(self.clu_ratios[cluid])
-            cluradius = self.r_sphere * self.dens_factors[cluid]
-            dist = self.distributions[cluid]
             if cluid >= 1:
+                dist = self.distributions[cluid]
+                cluradius = self.r_sphere * self.dens_factors[cluid]
                 clu_ratio = self.clu_ratios[cluid] - self.clu_ratios[cluid - 1]
             elif cluid == 0:
+                dist = self.distributions[cluid]
+                cluradius = self.r_sphere * self.dens_factors[cluid]
                 clu_ratio = self.clu_ratios[cluid]
             else:
                 clu_ratio = self.ratio_con * len(self.cores[cluid]) / con_core_num
@@ -812,7 +812,7 @@ class densityDataGen:
                     data.extend(data_new.tolist())
 
         if data_num - len(data) > 0 and self.ratio_noise == 0:
-            clus = np.random.choice(len(self.cores.keys()), data_num - len(data), replace = True)
+            clus = np.random.choice(self.clunum, data_num - len(data), replace=True)
             for cluid in clus:
                 clu_core_num = len(self.cores[cluid])
                 coreid = np.random.choice(clu_core_num,1)
@@ -1131,8 +1131,6 @@ class densityDataGen:
                                 eid) + "-" + str(cid)):
                             cid = conkey
 
-                # print(self.cores.keys())
-                # print(command[i+1])
 
                 if (command[i + 1] == "["):
                     j = 2
@@ -1391,9 +1389,9 @@ class densityDataGen:
         else:
             core_choice = np.random.choice(self.stream_data_cores_block[block][cluid_choice])
             core_chosen_pos = self.cores[cluid_choice][core_choice]
-            dist = self.distributions[cluid_choice]
             cluradius = 0
             if cluid_choice >= 0:
+                dist = self.distributions[cluid_choice]
                 cluradius = self.r_sphere * self.dens_factors[cluid_choice]
             else:
                 cluradius = self.c_sphere * self.con_dens_factors[-1 * cluid_choice - 2]
