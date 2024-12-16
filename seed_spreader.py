@@ -1,9 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy.random import PCG64
 
-
+main_generator = np.random.Generator(PCG64(0))
+# set seed for data generator
 def set_seed(i):
-    np.random.seed(i)
+    global main_generator
+    main_generator = np.random.Generator(PCG64(i))
 
 # Seed Spreader as described in DBSCAN Revisited
 # Junhao Gan and Yufei Tao. "DBSCAN revisited: Mis-claim, un-fixability, and approximation."
@@ -17,9 +20,9 @@ def set_seed(i):
 def random_ball_num(center, radius, d, n, clunum):
     d = int(d)
     n = int(n)
-    u = np.random.normal(0, 1, (n, d + 1))  # an array of d normally distributed random variables
+    u = main_generator.normal(0, 1, (n, d + 1))  # an array of d normally distributed random variables
     norm = np.sqrt(np.sum(u[:,:-1] ** 2, 1))
-    r = np.random.random(n) ** (1.0 / d)
+    r = main_generator.random(n) ** (1.0 / d)
     normed = np.divide(u, norm[:, None])
     x = r[:, None] * normed
     x[:, :-1] = center + x[:, :-1] * radius
@@ -29,9 +32,9 @@ def random_ball_num(center, radius, d, n, clunum):
 def random_ball_num_bias(center, radius, d, n, clunum):
     d = int(d)
     n = int(n)
-    u = np.random.normal(0, 1, (n, d + 1))  # an array of d normally distributed random variables
+    u = main_generator.normal(0, 1, (n, d + 1))  # an array of d normally distributed random variables
     norm = np.sqrt(np.sum(u ** 2, 1))
-    r = np.random.random(n) ** (1.0 / d)
+    r = main_generator.random(n) ** (1.0 / d)
     normed = np.divide(u, norm[:, None])
     x = r[:, None] * normed
     x[:, :-1] = center + x[:, :-1] * radius
@@ -76,7 +79,7 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
 
 
     points = []
-    pos = np.random.random(dim) * domain_size
+    pos = main_generator.random(dim) * domain_size
     counter = reset_counter
     cluid = 0
     while (len(points) < num_data):
@@ -86,11 +89,11 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
         else:
             factor = 1
 
-        rand = np.random.rand()
+        rand = main_generator.random()
         if rand < restart_chance:
             if(verbose):
                 print("restart occured")
-            pos = np.random.random(dim) * domain_size
+            pos = main_generator.random(dim) * domain_size
             counter = reset_counter
             if len(points) > 0:
                 cluid += 1
@@ -102,7 +105,7 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
         counter -= 1
 
         if counter == 0:
-            step_dir = (np.random.random(dim) - 0.5)
+            step_dir = (main_generator.random(dim) - 0.5)
             step_dir = step_dir / np.linalg.norm(step_dir)
             #print(pos)
             pos = pos + (step_dir * step * factor)
@@ -126,7 +129,7 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
         if minall > mins[d]:
             minall = mins[d]
 
-    noise = np.random.random([n-num_data, dim + 1])
+    noise = main_generator.random([n-num_data, dim + 1])
 
     if noise_adapt=="square":
         dspan = maxall - minall
