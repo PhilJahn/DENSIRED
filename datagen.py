@@ -905,11 +905,11 @@ class densityDataGen:
 		elif dist == "paper":
 			return random_ball_num_bias(core, cluradius, self.dim, core_data_num, cluid)
 		elif dist == "gaussian":
-			gseed = round(np_data_generator.random(1000000))
+			gseed = round(np_data_generator.random()*1000000)
 			return gaussian_ball_num(core, cluradius, self.dim, core_data_num, cluid, gseed)
 
 		else:
-			tseed = round(np_data_generator.random(1000000))
+			tseed = round(np_data_generator.random()*1000000)
 			return t_ball_num(core, cluradius, self.dim, core_data_num, cluid, float(self.distributions[cluid]), tseed)
 
 	def paint(self, dim1, dim2, data=None, show_radius=True, show_core=True, cores=None):
