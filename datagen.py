@@ -19,6 +19,18 @@ def random_ball_num(center, radius, d, n, clunum):
     d = int(d)
     n = int(n)
     u = np.random.normal(0, 1, (n, d + 1))  # an array of d normally distributed random variables
+    norm = np.sqrt(np.sum(u[:,:-1] ** 2, 1))
+    r = np.random.random(n) ** (1.0 / d)
+    normed = np.divide(u, norm[:, None])
+    x = r[:, None] * normed
+    x[:, :-1] = center + x[:, :-1] * radius
+    x[:, -1] = clunum
+    return x
+
+def random_ball_num_bias(center, radius, d, n, clunum):
+    d = int(d)
+    n = int(n)
+    u = np.random.normal(0, 1, (n, d + 1))  # an array of d normally distributed random variables
     norm = np.sqrt(np.sum(u ** 2, 1))
     r = np.random.random(n) ** (1.0 / d)
     normed = np.divide(u, norm[:, None])
@@ -32,7 +44,7 @@ def gaussian_ball_num(center, radius, d, n, clunum, seed):
     d = int(d)
     n = int(n)
     center = np.append(center,0)
-    cov = np.diag([1]*(d+1))
+    cov = np.diag([radius]*(d+1))
     r = multivariate_normal.rvs(size=n, mean=center, cov=cov, random_state=seed)
     x = r.reshape(n,d+1)
     x[:, -1] = clunum
@@ -54,7 +66,7 @@ class densityDataGen:
                  radius=1, step=1, ratio_con=0, connections=0, seed=0, dens_factors=False, momentum=0.5,
                  con_momentum=0.9, min_dist=1.1, con_min_dist=0.9, step_spread=0, max_retry=5, verbose=False,
                  safety=True, con_dens_factors=False, con_radius=2, con_step=2, branch=0.05, star=0, square=False,
-                 random_start=False, distribution=None, pos=None):
+                 random_start=False, distribution=None, pos=None, con_distribution=None):
         """
         For extensive parameter explanations, please consult the GitHub README
         :param dim: dimensionality
@@ -138,6 +150,7 @@ class densityDataGen:
         self.random_start = random_start
 
         self.data_ratio = 1 - ratio_con - ratio_noise
+
         if (self.data_ratio <= 0):
             raise BaseException("No data points can be generated")
 
@@ -161,6 +174,8 @@ class densityDataGen:
         for x in distribution:
             if x == None or str(x).lower() == "uniform":
                 self.distributions.append("uniform")
+            elif str(x).lower() == "paper":
+                self.distributions.append("paper")
             elif str(x).lower() == "studentt" or str(x).lower() == "tdist":
                 self.distributions.append(2)
             elif str(x).lower() == "gaussian":
@@ -170,6 +185,20 @@ class densityDataGen:
                     self.distributions.append(float(x))
                 except:
                     raise BaseException(f"{x} is not implemented")
+
+        if con_distribution == None or str(con_distribution).lower() == "uniform":
+            self.con_distribution = "uniform"
+        elif str(con_distribution).lower() == "paper":
+            self.con_distribution = "paper"
+        elif str(con_distribution).lower() == "studentt" or str(con_distribution).lower() == "tdist":
+            self.con_distribution = 2
+        elif str(con_distribution).lower() == "gaussian":
+            self.con_distribution = "gaussian"
+        else:
+            try:
+                self.con_distribution = float(con_distribution)
+            except:
+                raise BaseException(f"{con_distribution} is not implemented")
 
         if self.clu_ratios == None:
             while (True):
@@ -782,9 +811,9 @@ class densityDataGen:
                 cluradius = self.r_sphere * self.dens_factors[cluid]
                 clu_ratio = self.clu_ratios[cluid]
             else:
+                dist = self.con_distribution
                 clu_ratio = self.ratio_con * len(self.cores[cluid]) / con_core_num
                 cluradius = self.c_sphere * self.con_dens_factors[-1 * cluid - 2]
-                dist = "uniform"
             clu_core_num = len(self.cores[cluid])
 
             # print(cluid)
@@ -870,6 +899,8 @@ class densityDataGen:
     def generate_distribution(self, core, cluradius, core_data_num, dist, cluid):
         if dist == "uniform":
             return random_ball_num(core, cluradius, self.dim, core_data_num, cluid)
+        elif dist == "paper":
+            return random_ball_num_bias(core, cluradius, self.dim, core_data_num, cluid)
         elif dist == "gaussian":
             gseed = np.random.randint(1000000)
             return gaussian_ball_num(core, cluradius, self.dim, core_data_num, cluid, gseed)

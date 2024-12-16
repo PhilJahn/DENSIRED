@@ -18,6 +18,18 @@ def random_ball_num(center, radius, d, n, clunum):
     d = int(d)
     n = int(n)
     u = np.random.normal(0, 1, (n, d + 1))  # an array of d normally distributed random variables
+    norm = np.sqrt(np.sum(u[:,:-1] ** 2, 1))
+    r = np.random.random(n) ** (1.0 / d)
+    normed = np.divide(u, norm[:, None])
+    x = r[:, None] * normed
+    x[:, :-1] = center + x[:, :-1] * radius
+    x[:, -1] = clunum
+    return x
+
+def random_ball_num_bias(center, radius, d, n, clunum):
+    d = int(d)
+    n = int(n)
+    u = np.random.normal(0, 1, (n, d + 1))  # an array of d normally distributed random variables
     norm = np.sqrt(np.sum(u ** 2, 1))
     r = np.random.random(n) ** (1.0 / d)
     normed = np.divide(u, norm[:, None])
@@ -27,7 +39,7 @@ def random_ball_num(center, radius, d, n, clunum):
     return x
 
 def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, reset_counter= 100, restart_chance_mult = 10,
-             radius=100, seed=0, verbose =False, noise_adapt=False, var_density = False, step = False):
+             radius=100, seed=0, verbose =False, noise_adapt=False, var_density = False, step = False, gen = "uniform"):
     """
     Seed Spreader generator function
     :param n: number of data points
@@ -42,6 +54,7 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
     :param verbose: verbose
     :param noise_adapt: adapt noise to altered domain size after random walk
     :param step: overwrite step, otherwise radius/(2*dim)
+    :param gen: use different distribution for data point placement (only supports 'paper' (for paper version) aside from default uniform)
     :return: data points as np.array of shape (dim+1, data_num), last column is cluster id
     """
     if not step:
@@ -81,7 +94,10 @@ def seedSpreader(n = 2000000, dim=5, ratio_noise=0.001, domain_size=100000, rese
             counter = reset_counter
             if len(points) > 0:
                 cluid += 1
-        point = random_ball_num(pos, radius* factor, dim, 1, cluid)
+        if gen == "paper":
+            point = random_ball_num(pos, radius* factor, dim, 1, cluid)
+        else:
+            point = random_ball_num_bias(pos, radius* factor, dim, 1, cluid)
         points.append(point[0])
         counter -= 1
 

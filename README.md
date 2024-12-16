@@ -69,7 +69,7 @@ skeleton.display_stream(command=commandstring, default_duration = 1000)
 | min_dist            | *o*   | $1.1$       | overlap factor on the minimal distance between cores (sum of core sizes)                                                                                                                                                                                                              |
 | step_spread | *w*     | $0$           | width of normal distribution on shift                                                                                                                                                                                                                                         |
 | pos | *p*     | $None$           | starting core positions for clusters, unspecified if None, needs to be set per cluster in a list<br>if the cluster could not be created for the specified position, the regular starting rules are used instead                                                                                                                                                                                                     |
-| distributions | *dist*     | $None$           | distributions for random generation of data points for each core<br>None or "uniform" uses uniform distribution within hypersphere<br>"gaussian" uses a multivariate Gaussian (covariance matrix being a diagonal matrix using the core radius)<br>"studentt" uses multivariate Student's t distribution with degrees of freedom 2<br>if a number is given, uses multivariate Student's t distribution with degrees of freedom corresponding to the given number (shape being the core radius)<br>can also be set per cluster in a list<br>Note: using anything other than uniform can lead to the data not being density-separable, radii and min_dists may need to be adjusted |
+| distributions | *dist*     | $None$           | distributions for random generation of data points for each core<br>None or "uniform" uses uniform distribution within hypersphere<br>"paper" is the distribution used for the paper at ECML PKDD 2024 and up to version 1.1.0<br>"gaussian" uses a multivariate Gaussian (covariance matrix being a diagonal matrix using the core radius)<br>"studentt" uses multivariate Student's t distribution with degrees of freedom 2<br>if a number is given, uses multivariate Student's t distribution with degrees of freedom corresponding to the given number (shape being the core radius)<br>can also be set per cluster in a list<br>Note: using anything other than uniform or paper can lead to the data not being density-separable, radii and min_dists may need to be adjusted |
 | max\_retry           | *mr*  | $5$           | maximal number of attempts for generation before generation enters the failure handling                                                                                                                                                                                       |
 | branch               | $\beta$   | $0.05$           | chance of creating a branch from the prior scaffolding of the cluster<br>done by restarting from a randomly selected core of the current cluster                                                                                                                                 |
 | star                 |  $\varkappa$     | $0$           | chance of the initial starting core being chosen for any attempt of restarting applies to both failure and branching<br>remaining cores all have an equal probability                                                                                                                                                                    |
@@ -79,7 +79,8 @@ skeleton.display_stream(command=commandstring, default_duration = 1000)
 | con_step           | $\delta_c$  | $2$         | analogous to step, used for connections                                                                                                                                                                                                                                      |
 | con_dens_factors  | *cf*$_c$ | False       | analogous to dens_factors, used for connections                                                                                                                                                                                                                             |
 | con_momentum     | $\omega_c$  | $0.9$       | analogous to momentum, used for connections                                                                                                                                                                                                                                 |
-| con_min_dist       | *o*$_c$  | $0.9$       | factor on the minimal distance between a connection and other cores                                                                                                                                                                                                           |
+| con_min_dist       | *o*$_c$  | $0.9$       | factor on the minimal distance between a connection and other cores   
+| con_distribution | *dist*$_c$ | $None$           | distributions for random generation of data points for the cores of the connections                                                                                                                                                                                                      |
 | clu\_ratios          | *ra*    | None        | distribution of data points across clusters                                                                                                                                                                                                                                   |
 | min\_ratio           | *ra*$_m$   | $0$           | minimal ratio of cores/points<br>(only used when these are randomly determined through *ra*, should be $<<1$)                                                                                                                                                                   |
 | ratio\_noise         | *ra*$_n$     | $0$         | ratio of noise data points                                                                                                                                                                                                                                                    |
@@ -254,3 +255,26 @@ The required packages are:
 numpy
 matplotlib
 ```
+
+## Paper ##
+If you use our code in your research or applications, please consider citing our paper.
+Due to a bug in the implementation, the distributions used for data generation in the paper is not uniform, but has some bias towards the center of the core.
+This bug has since been resolved, but the old distribution can be used by setting ```paper``` as the parameter value for *distributions* or *con_distribution*.
+```
+@inproceedings{jahn24densired,
+  author       = {Philipp Jahn and
+                  Christian M. M. Frey and
+                  Anna Beer and
+                  Collin Leiber and
+                  Thomas Seidl},
+  title        = {Data with Density-Based Clusters: {A} Generator for Systematic Evaluation
+                  of Clustering Algorithms},
+  booktitle    = {{ECML/PKDD} {(7)}},
+  series       = {Lecture Notes in Computer Science},
+  volume       = {14947},
+  pages        = {3--21},
+  publisher    = {Springer},
+  year         = {2024}
+}
+
+
